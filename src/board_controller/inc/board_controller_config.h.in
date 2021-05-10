@@ -1,0 +1,15 @@
+#pragma once
+
+#cmakedefine ENABLE_CYTHON
+#cmakedefine ENABLE_GANGLION
+#cmakedefine ENABLE_GALEA
+#cmakedefine ENABLE_BRAINBIT
+#cmakedefine ENABLE_BRAINBIT_BLED
+#cmakedefine ENABLE_UNICORN
+#cmakedefine ENABLE_CALLIBRI
+#cmakedefine ENABLE_FASCIA
+#cmakedefine ENABLE_NOTION
+#cmakedefine ENABLE_IRONBCI
+#cmakedefine ENABLE_GFORCE_PRO
+#cmakedefine ENABLE_GFORCE_DUAL
+#cmakedefine ENABLE_FREEEEG32

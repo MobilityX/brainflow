@@ -13,34 +13,61 @@
 #include <string>
 #include <utility>
 
+#include "board_controller_config.h"
 #include "board.h"
 #include "board_controller.h"
 #include "board_info_getter.h"
+#ifdef ENABLE_BRAINBIT
 #include "brainbit.h"
+#endif /* ENABLE_BRAINBIT */
+#ifdef ENABLE_BRAINBIT_BLED
 #include "brainbit_bled.h"
+#endif /* ENABLE_BRAINBIT_BLED */
 #include "brainflow_constants.h"
 #include "brainflow_input_params.h"
+#ifdef ENABLE_CALLIBRI
 #include "callibri_ecg.h"
 #include "callibri_eeg.h"
 #include "callibri_emg.h"
+#endif /* ENABLE_CALLIBRI */
+#ifdef ENABLE_CYTHON
 #include "cyton.h"
 #include "cyton_daisy.h"
 #include "cyton_daisy_wifi.h"
 #include "cyton_wifi.h"
+#endif /* ENABLE_CYTHON */
+#ifdef ENABLE_FASCIA
 #include "fascia.h"
+#endif /* ENABLE_FASCIA */
+#ifdef ENABLE_FREEEEG32
 #include "freeeeg32.h"
+#endif /* ENABLE_FREEEEG32 */
+#ifdef ENABLE_GALEA
 #include "galea.h"
 #include "galea_serial.h"
+#endif /* ENABLE_GALEA */
+#ifdef ENABLE_GANGLION
 #include "ganglion.h"
 #include "ganglion_wifi.h"
+#endif /* ENABLE_GANGLION */
+#ifdef ENABLE_GFORCE_DUAL
 #include "gforce_dual.h"
+#endif /* ENABLE_GFORCE_DUAL */
+#ifdef ENABLE_GFORCE_PRO
 #include "gforce_pro.h"
+#endif /* ENABLE_GFORCE_PRO */
+#ifdef ENABLE_IRONBCI
 #include "ironbci.h"
+#endif /* ENABLE_IRONBCI */
+#ifdef ENABLE_NOTION
 #include "notion_osc.h"
+#endif /* ENABLE_NOTION */
 #include "playback_file_board.h"
 #include "streaming_board.h"
 #include "synthetic_board.h"
+#ifdef ENABLE_UNICORN
 #include "unicorn_board.h"
+#endif /* ENABLE_UNICORN */
 
 #include "json.hpp"
 
@@ -90,33 +117,50 @@ int prepare_session (int board_id, char *json_brainflow_input_params)
         case BoardIds::SYNTHETIC_BOARD:
             board = std::shared_ptr<Board> (new SyntheticBoard (params));
             break;
+#ifdef ENABLE_CYTHON
         case BoardIds::CYTON_BOARD:
             board = std::shared_ptr<Board> (new Cyton (params));
             break;
+#endif /* ENABLE_CYTHON */
+#ifdef ENABLE_GANGLION
         case BoardIds::GANGLION_BOARD:
             board = std::shared_ptr<Board> (new Ganglion (params));
             break;
+#endif /* ENABLE_GANGLION */
+#ifdef ENABLE_CYTHON
         case BoardIds::CYTON_DAISY_BOARD:
             board = std::shared_ptr<Board> (new CytonDaisy (params));
             break;
+#endif /* ENABLE_CYTHON */
+#ifdef ENABLE_GALEA
         case BoardIds::GALEA_BOARD:
             board = std::shared_ptr<Board> (new Galea (params));
             break;
+#endif /* ENABLE_GALEA */
+#ifdef ENABLE_GANGLION
         case BoardIds::GANGLION_WIFI_BOARD:
             board = std::shared_ptr<Board> (new GanglionWifi (params));
             break;
+#endif /* ENABLE_GANGLION */
+#ifdef ENABLE_CYTHON
         case BoardIds::CYTON_WIFI_BOARD:
             board = std::shared_ptr<Board> (new CytonWifi (params));
             break;
         case BoardIds::CYTON_DAISY_WIFI_BOARD:
             board = std::shared_ptr<Board> (new CytonDaisyWifi (params));
             break;
+#endif /* ENABLE_CYTHON */
+#ifdef ENABLE_BRAINBIT
         case BoardIds::BRAINBIT_BOARD:
             board = std::shared_ptr<Board> (new BrainBit (params));
             break;
+#endif /* ENABLE_BRAINBIT */
+#ifdef ENABLE_UNICORN
         case BoardIds::UNICORN_BOARD:
             board = std::shared_ptr<Board> (new UnicornBoard (params));
             break;
+#endif /* ENABLE_UNICORN */
+#ifdef ENABLE_CALLIBRI
         case BoardIds::CALLIBRI_EEG_BOARD:
             board = std::shared_ptr<Board> (new CallibriEEG (params));
             break;
@@ -126,9 +170,13 @@ int prepare_session (int board_id, char *json_brainflow_input_params)
         case BoardIds::CALLIBRI_ECG_BOARD:
             board = std::shared_ptr<Board> (new CallibriECG (params));
             break;
+#endif /* ENABLE_CALLIBRI */
+#ifdef ENABLE_FASCIA
         case BoardIds::FASCIA_BOARD:
             board = std::shared_ptr<Board> (new Fascia (params));
             break;
+#endif /* ENABLE_FASCIA */
+#ifdef ENABLE_NOTION
         // notion 1 and notion 2 have the same class, the only difference is get_eeg_names
         case BoardIds::NOTION_1_BOARD:
             board = std::shared_ptr<Board> (new NotionOSC (params));
@@ -136,24 +184,37 @@ int prepare_session (int board_id, char *json_brainflow_input_params)
         case BoardIds::NOTION_2_BOARD:
             board = std::shared_ptr<Board> (new NotionOSC (params));
             break;
+#endif /* ENABLE_NOTION */
+#ifdef ENABLE_IRONBCI
         case BoardIds::IRONBCI_BOARD:
             board = std::shared_ptr<Board> (new IronBCI (params));
             break;
+#endif /* ENABLE_IRONBCI */
+#ifdef ENABLE_GFORCE_PRO
         case BoardIds::GFORCE_PRO_BOARD:
             board = std::shared_ptr<Board> (new GforcePro (params));
             break;
+#endif /* ENABLE_GFORCE_PRO */
+#ifdef ENABLE_FREEEEG32
         case BoardIds::FREEEEG32_BOARD:
             board = std::shared_ptr<Board> (new FreeEEG32 (params));
             break;
+#endif /* ENABLE_FREEEEG32 */
+#ifdef ENABLE_BRAINBIT_BLED
         case BoardIds::BRAINBIT_BLED_BOARD:
             board = std::shared_ptr<Board> (new BrainBitBLED (params));
             break;
+#endif /* ENABLE_BRAINBIT_BLED */
+#ifdef ENABLE_GFORCE_DUAL
         case BoardIds::GFORCE_DUAL_BOARD:
             board = std::shared_ptr<Board> (new GforceDual (params));
             break;
+#endif /* ENABLE_GFORCE_DUAL */
+#ifdef ENABLE_GALEA
         case BoardIds::GALEA_SERIAL_BOARD:
             board = std::shared_ptr<Board> (new GaleaSerial (params));
             break;
+#endif /* ENABLE_GALEA */
         default:
             return (int)BrainFlowExitCodes::UNSUPPORTED_BOARD_ERROR;
     }

@@ -6,10 +6,41 @@ set (CMAKE_VERBOSE_MAKEFILE ON)
 set (BRAINFLOW_VERSION 3.7.3)
 
 # dont export sumbols on unix by default
-set (CMAKE_CXX_VISIBILITY_PRESET hidden)
-set (CMAKE_C_VISIBILITY_PRESET hidden)
+#set (CMAKE_CXX_VISIBILITY_PRESET hidden)
+#set (CMAKE_C_VISIBILITY_PRESET hidden)
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+option(DISABLE_AS_DEFAULT "Disable hardware support by default" OFF)
+if (DISABLE_AS_DEFAULT)
+    SET(ENABLE_CYTHON OFF)
+    SET(ENABLE_GANGLION OFF)
+    SET(ENABLE_GALEA OFF)
+    SET(ENABLE_BRAINBIT OFF)
+    SET(ENABLE_BRAINBIT_BLED OFF)
+    SET(ENABLE_UNICORN OFF)
+    SET(ENABLE_CALLIBRI OFF)
+    SET(ENABLE_FASCIA OFF)
+    SET(ENABLE_NOTION OFF)
+    SET(ENABLE_IRONBCI OFF)
+    SET(ENABLE_GFORCE_PRO OFF)
+    SET(ENABLE_GFORCE_DUAL OFF)
+    SET(ENABLE_FREEEEG32 OFF)
+endif (DISABLE_AS_DEFAULT)
+
+option(ENABLE_CYTHON "ENABLE_CYTHON" ON)
+option(ENABLE_GANGLION "ENABLE_GANGLION" ON)
+option(ENABLE_GALEA "ENABLE_GALEA" ON)
+option(ENABLE_BRAINBIT "ENABLE_BRAINBIT" OFF)
+option(ENABLE_BRAINBIT_BLED "ENABLE_BRAINBIT_BLED" ON)
+option(ENABLE_UNICORN "ENABLE_UNICORN" OFF)
+option(ENABLE_CALLIBRI "ENABLE_CALLIBRI" OFF)
+option(ENABLE_FASCIA "ENABLE_FASCIA" ON)
+option(ENABLE_NOTION "ENABLE_NOTION" ON)
+option(ENABLE_IRONBCI "ENABLE_IRONBCI" ON)
+option(ENABLE_GFORCE_PRO "ENABLE_GFORCE_PRO" OFF)
+option(ENABLE_GFORCE_DUAL "ENABLE_GFORCE_DUAL" OFF)
+option(ENABLE_FREEEEG32 "ENABLE_FREEEEG32" ON)
 
 option(USE_LIBFTDI "USE_LIBFTDI" OFF)
 option(USE_OPENMP "USE_OPENMP" OFF)
@@ -83,113 +114,6 @@ add_library (${WAVELIB} STATIC ${WAVELIB_SRC})
 target_include_directories (${WAVELIB} PUBLIC $<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/third_party/wavelib/header>)
 set_property (TARGET ${WAVELIB} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    MESSAGE ("64 bits compiler detected")
-    SET (PLATFORM_ACH "X64")
-    SET (GANGLION_LIB "GanglionLib")
-    SET (BRAINBIT_BLED_LIB "BrainBitLib")
-    SET (BOARD_CONTROLLER_NAME "BoardController")
-    SET (DATA_HANDLER_NAME "DataHandler")
-    SET (ML_MODULE_NAME "MLModule")
-    SET (BRAINFLOW_CPP_BINDING_NAME "Brainflow")
-    if(APPLE)
-        SET (GANGLION_LIB_NAME "libGanglionLib.dylib")
-        SET (BRAINBIT_BLED_LIB_NAME "libBrainBitLib.dylib")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "libBoardController.dylib")
-        SET (DATA_HANDLER_COMPILED_NAME "libDataHandler.dylib")
-        SET (ML_MODULE_COMPILED_NAME "libMLModule.dylib")
-        SET (NEUROSDK_LIB_NAME "neurosdk-shared")
-    elseif (UNIX)
-        SET (GANGLION_LIB_NAME "libGanglionLib.so")
-        SET (BRAINBIT_BLED_LIB_NAME "libBrainBitLib.so")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "libBoardController.so")
-        SET (DATA_HANDLER_COMPILED_NAME "libDataHandler.so")
-        SET (ML_MODULE_COMPILED_NAME "libMLModule.so")
-    else ()
-        SET (GANGLION_LIB_NAME "GanglionLib.dll")
-        SET (BRAINBIT_BLED_LIB_NAME "BrainBitLib.dll")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "BoardController.dll")
-        SET (DATA_HANDLER_COMPILED_NAME "DataHandler.dll")
-        SET (NEUROSDK_LIB_NAME "neurosdk-x64")
-        SET (ML_MODULE_COMPILED_NAME "MLModule.dll")
-    endif (APPLE)
-else (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    MESSAGE ("32 bits compiler detected")
-    SET (PLATFORM_ACH "X86")
-    # for linux and apple we dont add 32bit library to packages, so there can not be a conflict between libs
-    # to dont write code like if(32 bits) if(64 bits) in bindings and keep the ability to use them if brainflow was built from src
-    # use the same name for 32 and 64 bits
-    if (APPLE)
-        SET (BRAINBIT_BLED_LIB "BrainBitLib")
-        SET (GANGLION_LIB "GanglionLib")
-        SET (GANGLION_LIB_NAME "libGanglionLib.dylib")
-        SET (BRAINBIT_BLED_LIB_NAME "libBrainBitLib.dylib")
-        SET (BOARD_CONTROLLER_NAME "BoardController")
-        SET (DATA_HANDLER_NAME "DataHandler")
-        SET (BRAINFLOW_CPP_BINDING_NAME "Brainflow")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "libBoardController.dylib")
-        SET (DATA_HANDLER_COMPILED_NAME "libDataHandler.dylib")
-        SET (ML_MODULE_NAME "MLModule")
-        SET (ML_MODULE_COMPILED_NAME "libMLModule.dylib")
-    elseif (UNIX)
-        SET (GANGLION_LIB "GanglionLib")
-        SET (GANGLION_LIB_NAME "libGanglionLib.so")
-        SET (BRAINBIT_BLED_LIB "BrainBitLib")
-        SET (BRAINBIT_BLED_LIB_NAME "libBrainBitLib.so")
-        SET (BOARD_CONTROLLER_NAME "BoardController")
-        SET (DATA_HANDLER_NAME "DataHandler")
-        SET (BRAINFLOW_CPP_BINDING_NAME "Brainflow")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "libBoardController.so")
-        SET (DATA_HANDLER_COMPILED_NAME "libDataHandler.so")
-        SET (ML_MODULE_NAME "MLModule")
-        SET (ML_MODULE_COMPILED_NAME "libMLModule.so")
-    else ()
-        SET (GANGLION_LIB "GanglionLib32")
-        SET (GANGLION_LIB_NAME "GanglionLib32.dll")
-        SET (BRAINBIT_BLED_LIB "BrainBitLib32")
-        SET (BRAINBIT_BLED_LIB_NAME "BrainBitLib32.dll")
-        SET (BOARD_CONTROLLER_NAME "BoardController32")
-        SET (DATA_HANDLER_NAME "DataHandler32")
-        SET (BRAINFLOW_CPP_BINDING_NAME "Brainflow32")
-        SET (BOARD_CONTROLLER_COMPILED_NAME "BoardController32.dll")
-        SET (DATA_HANDLER_COMPILED_NAME "DataHandler32.dll")
-        SET (NEUROSDK_LIB_NAME "neurosdk-x86")
-        SET (ML_MODULE_NAME "MLModule32")
-        SET (ML_MODULE_COMPILED_NAME "MLModule32.dll")
-    endif (APPLE)
-endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
-
-set (GANGLION_SOURCE_LIB
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/callbacks.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/cmd_def.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/helpers.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/main.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/stubs.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/uart.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/utils/timestamp.cpp
-)
-add_library (${GANGLION_LIB} SHARED ${GANGLION_SOURCE_LIB})
-target_include_directories (${GANGLION_LIB} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/src/utils/inc>
-    $<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/inc>
-)
-set_property (TARGET ${GANGLION_LIB} PROPERTY POSITION_INDEPENDENT_CODE ON)
-
-set (BRAINBIT_BLED_SOURCE_LIB
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/callbacks.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/cmd_def.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/helpers.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/main.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/stubs.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/uart.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/utils/timestamp.cpp
-)
-add_library (${BRAINBIT_BLED_LIB} SHARED ${BRAINBIT_BLED_SOURCE_LIB})
-target_include_directories (${BRAINBIT_BLED_LIB} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/src/utils/inc>
-    $<BUILD_INTERFACE:${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/inc>
-)
-set_property (TARGET ${BRAINBIT_BLED_LIB} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 set (BOARD_CONTROLLER_SRC
     ${CMAKE_HOME_DIRECTORY}/src/utils/timestamp.cpp
@@ -205,15 +129,6 @@ set (BOARD_CONTROLLER_SRC
     ${CMAKE_HOME_DIRECTORY}/src/utils/multicast_client.cpp
     ${CMAKE_HOME_DIRECTORY}/src/utils/multicast_server.cpp
     ${CMAKE_HOME_DIRECTORY}/src/utils/broadcast_client.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/galea_serial.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_serial_board.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_wifi_shield_board.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_wifi.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_wifi.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_daisy_wifi.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_daisy.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/board_controller.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/board_info_getter.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/board.cpp
@@ -221,27 +136,26 @@ set (BOARD_CONTROLLER_SRC
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/streaming_board.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/synthetic_board.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/playback_file_board.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/galea.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/file_streamer.cpp
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/multicast_streamer.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/gtec/unicorn_board.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/neuromd_board.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_eeg.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_ecg.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_emg.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/mit/fascia.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neurosity/notion_osc.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/oymotion/gforce_pro.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/oymotion/gforce_dual.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/ironbci/ironbci.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/freeeeg32/freeeeg32.cpp
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bled.cpp
+)
+
+set (BOARD_CONTROLLER_HDR
+    src/board_controller/inc/board_controller.h
+    src/board_controller/inc/board_info_getter.h
+    src/board_controller/inc/brainflow_input_params.h
+    src/utils/inc/brainflow_constants.h
+    src/utils/inc/shared_export.h
 )
 
 set (DATA_HANDLER_SRC
     ${CMAKE_HOME_DIRECTORY}/src/data_handler/data_handler.cpp
+)
+
+set (DATA_HANDLER_HDR
+    src/data_handler/inc/data_handler.h
+    src/utils/inc/brainflow_constants.h
+    src/utils/inc/shared_export.h
 )
 
 set (ML_MODULE_SRC
@@ -257,27 +171,42 @@ set (ML_MODULE_SRC
     ${CMAKE_HOME_DIRECTORY}/src/ml/generated/regression_model.cpp
 )
 
+set (ML_MODULE_HDR
+    src/ml/inc/ml_module.h
+    src/ml/inc/brainflow_model_params.h
+    src/utils/inc/brainflow_constants.h
+    src/utils/inc/shared_export.h
+)
+
+
 add_library (
-    ${BOARD_CONTROLLER_NAME} SHARED
+    BoardController SHARED
     ${BOARD_CONTROLLER_SRC}
 )
 
 add_library (
-    ${DATA_HANDLER_NAME} SHARED
+    DataHandler SHARED
     ${DATA_HANDLER_SRC}
 )
 
 add_library (
-    ${ML_MODULE_NAME} SHARED
+    MLModule SHARED
     ${ML_MODULE_SRC}
 )
 
+configure_file (
+    ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller_config.h.in
+    ${CMAKE_BINARY_DIR}/src/board_controller/inc/board_controller_config.h
+)
+
+set_target_properties(BoardController PROPERTIES PUBLIC_HEADER "${BOARD_CONTROLLER_HDR}")
+
 target_include_directories (
-    ${BOARD_CONTROLLER_NAME} PRIVATE
+    BoardController PRIVATE
+    ${CMAKE_BINARY_DIR}/src/board_controller/inc
     ${CMAKE_HOME_DIRECTORY}/third_party/
     ${CMAKE_HOME_DIRECTORY}/third_party/json
     ${CMAKE_HOME_DIRECTORY}/third_party/http
-    ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/inc
     ${CMAKE_HOME_DIRECTORY}/third_party/oscpp/include
     ${CMAKE_HOME_DIRECTORY}/src/utils/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc
@@ -288,18 +217,19 @@ target_include_directories (
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_bglib/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bglib/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/mit/inc
-    ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/inc/types
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/neurosity/inc
-    ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/src/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/ironbci/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/freeeeg32/inc
 )
 
 # disable min max defines in windows.h
-target_compile_definitions(${BOARD_CONTROLLER_NAME} PRIVATE -DNOMINMAX)
+target_compile_definitions(BoardController PRIVATE -DNOMINMAX)
+
+
+set_target_properties(DataHandler PROPERTIES PUBLIC_HEADER "${DATA_HANDLER_HDR}")
 
 target_include_directories (
-    ${DATA_HANDLER_NAME} PRIVATE
+    DataHandler PRIVATE
     ${CMAKE_HOME_DIRECTORY}/third_party/
     ${CMAKE_HOME_DIRECTORY}/src/utils/inc
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc
@@ -309,8 +239,10 @@ target_include_directories (
     ${CMAKE_HOME_DIRECTORY}/third_party/fft/src
 )
 
+set_target_properties(MLModule PROPERTIES PUBLIC_HEADER "${ML_MODULE_HDR}")
+
 target_include_directories (
-    ${ML_MODULE_NAME} PRIVATE
+    MLModule PRIVATE
     ${CMAKE_HOME_DIRECTORY}/third_party/
     ${CMAKE_HOME_DIRECTORY}/src/utils/inc
     ${CMAKE_HOME_DIRECTORY}/src/ml/inc
@@ -319,40 +251,145 @@ target_include_directories (
     ${CMAKE_HOME_DIRECTORY}/third_party/kdtree
 )
 
-set_target_properties (${BOARD_CONTROLLER_NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-)
+if (ENABLE_CYTHON)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_wifi.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_daisy_wifi.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/cyton_daisy.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_serial_board.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_wifi_shield_board.cpp
+    )
+endif(ENABLE_CYTHON)
 
-set_target_properties (${GANGLION_LIB}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-)
+if (ENABLE_GANGLION)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_serial_board.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/openbci_wifi_shield_board.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion_wifi.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/ganglion.cpp
+    )
+    add_subdirectory(src/board_controller/openbci/ganglion_bglib)
+endif(ENABLE_GANGLION)
 
-set_target_properties (${BRAINBIT_BLED_LIB}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-)
 
-set_target_properties (${DATA_HANDLER_NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-)
+if (ENABLE_GALEA)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/galea_serial.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/openbci/galea.cpp
+    )
+endif(ENABLE_GALEA)
 
-set_target_properties (${ML_MODULE_NAME}
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/compiled
-)
+
+if (ENABLE_BRAINBIT)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/neuromd_board.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit.cpp
+    )
+    target_include_directories (
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/inc/types
+    )
+endif(ENABLE_BRAINBIT)
+
+
+if (ENABLE_BRAINBIT_BLED)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/brainbit_bled.cpp
+    )
+    add_subdirectory(src/board_controller/neuromd/brainbit_bglib)
+endif(ENABLE_BRAINBIT_BLED)
+
+
+if (ENABLE_UNICORN)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/gtec/unicorn_board.cpp
+    )
+    target_include_directories (
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/inc
+    )
+        
+endif(ENABLE_UNICORN)
+
+
+if (ENABLE_CALLIBRI)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/neuromd_board.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_eeg.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_ecg.cpp
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neuromd/callibri_emg.cpp
+    )
+    target_include_directories (
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/inc/types
+    )
+endif(ENABLE_CALLIBRI)
+
+
+if (ENABLE_FASCIA)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/mit/fascia.cpp
+    )
+endif(ENABLE_FASCIA)
+
+
+if (ENABLE_NOTION)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/neurosity/notion_osc.cpp
+    )
+endif(ENABLE_NOTION)
+
+
+if (ENABLE_IRONBCI)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/ironbci/ironbci.cpp
+    )
+endif (ENABLE_IRONBCI)
+
+
+if (ENABLE_GFORCE_PRO)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/oymotion/gforce_pro.cpp
+    )
+    target_include_directories (
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/src/inc
+    )
+endif (ENABLE_GFORCE_PRO)
+
+
+if (ENABLE_GFORCE_DUAL)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/oymotion/gforce_dual.cpp
+    )
+    target_include_directories (
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/src/inc
+    )
+endif (ENABLE_GFORCE_DUAL)
+
+
+if (ENABLE_FREEEEG32)
+    target_sources(
+        BoardController PRIVATE
+        ${CMAKE_HOME_DIRECTORY}/src/board_controller/freeeeg32/freeeeg32.cpp
+    )
+endif (ENABLE_FREEEEG32)
+
 
 if (BUILD_OYMOTION_SDK)
     add_subdirectory (${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX)
@@ -368,10 +405,10 @@ if (USE_LIBFTDI)
         # http://developer.intra2net.com/git/?p=libftdi;a=commit;h=cdb28383402d248dbc6062f4391b038375c52385
         set (LIBFTDI_INCLUDE_DIRS ${LIBFTDI_INCLUDE_DIRS} ${LIBFTDI_INCLUDE_DIR}/../libftdi1)
 
-        target_compile_definitions (${BOARD_CONTROLLER_NAME} PRIVATE ${LIBFTDI_DEFINITIONS} "USE_LIBFTDI")
-        target_include_directories (${BOARD_CONTROLLER_NAME} PRIVATE ${LIBFTDI_INCLUDE_DIRS})
-        target_link_directories (${BOARD_CONTROLLER_NAME} PRIVATE ${LIBFTDI_LIBRARY_DIRS})
-        target_link_libraries (${BOARD_CONTROLLER_NAME} PRIVATE ${LIBFTDI_LIBRARIES})
+        target_compile_definitions (BoardController PRIVATE ${LIBFTDI_DEFINITIONS} "USE_LIBFTDI")
+        target_include_directories (BoardController PRIVATE ${LIBFTDI_INCLUDE_DIRS})
+        target_link_directories (BoardController PRIVATE ${LIBFTDI_LIBRARY_DIRS})
+        target_link_libraries (BoardController PRIVATE ${LIBFTDI_LIBRARIES})
     else (LibFTDI1_FOUND)
         message (FATAL_ERROR "USE_LIBFTDI set but LibFTDI not found.")
     endif (LibFTDI1_FOUND)
@@ -380,8 +417,8 @@ endif (USE_LIBFTDI)
 if (USE_OPENMP)
     find_package (OpenMP)
     if (OpenMP_CXX_FOUND)
-        target_link_libraries (${DATA_HANDLER_NAME} PRIVATE OpenMP::OpenMP_CXX)
-        target_link_libraries (${ML_MODULE_NAME} PRIVATE OpenMP::OpenMP_CXX)
+        target_link_libraries (DataHandler PRIVATE OpenMP::OpenMP_CXX)
+        target_link_libraries (MLModule PRIVATE OpenMP::OpenMP_CXX)
     else (OpenMP_CXX_FOUND)
         message (FATAL_ERROR "ENABLE_OPENMP set but no OpenMP found.")
     endif (OpenMP_CXX_FOUND)
@@ -389,29 +426,40 @@ endif (USE_OPENMP)
 
 # dont link pthread for Android
 if (UNIX AND NOT ANDROID)
-    target_link_libraries (${BOARD_CONTROLLER_NAME} PRIVATE pthread dl)
-    target_link_libraries (${ML_MODULE_NAME} PRIVATE pthread dl)
-    target_link_libraries (${DATA_HANDLER_NAME} PRIVATE ${DSPFILTERS} ${WAVELIB} pthread dl)
+    target_link_libraries (BoardController PRIVATE pthread dl)
+    target_link_libraries (MLModule PRIVATE pthread dl)
+    target_link_libraries (DataHandler PRIVATE ${DSPFILTERS} ${WAVELIB} pthread dl)
 else (UNIX AND NOT ANDROID)
-    target_link_libraries (${DATA_HANDLER_NAME} PRIVATE ${DSPFILTERS} ${WAVELIB})
+    target_link_libraries (DataHandler PRIVATE ${DSPFILTERS} ${WAVELIB})
 endif (UNIX AND NOT ANDROID)
 # link android logging library
 if (ANDROID)
     find_library (log-lib log)
-    target_link_libraries (${ML_MODULE_NAME} PRIVATE log)
-    target_link_libraries (${BOARD_CONTROLLER_NAME} PRIVATE log)
-    target_link_libraries (${DATA_HANDLER_NAME} PRIVATE  log)
+    target_link_libraries (MLModule PRIVATE log)
+    target_link_libraries (BoardController PRIVATE log)
+    target_link_libraries (DataHandler PRIVATE  log)
 endif (ANDROID)
 
+
+set (BRAINFLOW_HDR
+    cpp-package/src/inc/data_filter.h
+    cpp-package/src/inc/board_shim.h
+    cpp-package/src/inc/ml_model.h
+    src/utils/inc/brainflow_array.h
+    src/utils/inc/brainflow_exception.h
+)
+
 add_library (
-    ${BRAINFLOW_CPP_BINDING_NAME} STATIC
+    Brainflow STATIC
     ${CMAKE_HOME_DIRECTORY}/cpp-package/src/board_shim.cpp
     ${CMAKE_HOME_DIRECTORY}/cpp-package/src/ml_model.cpp
     ${CMAKE_HOME_DIRECTORY}/cpp-package/src/data_filter.cpp
 )
 
+set_target_properties(Brainflow PROPERTIES PUBLIC_HEADER "${BRAINFLOW_HDR}")
+
 target_include_directories (
-    ${BRAINFLOW_CPP_BINDING_NAME} PRIVATE
+    Brainflow PRIVATE
     ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc
     ${CMAKE_HOME_DIRECTORY}/src/utils/inc
     ${CMAKE_HOME_DIRECTORY}/src/data_handler/inc
@@ -420,178 +468,170 @@ target_include_directories (
     ${CMAKE_HOME_DIRECTORY}/src/ml/inc
 )
 
-if (UNIX AND NOT ANDROID)
-    target_link_libraries (${BRAINFLOW_CPP_BINDING_NAME} PRIVATE ${BOARD_CONTROLLER_NAME} ${DATA_HANDLER_NAME} ${ML_MODULE_NAME})
-else (UNIX AND NOT ANDROID)
-    target_link_libraries (${BRAINFLOW_CPP_BINDING_NAME} PRIVATE ${BOARD_CONTROLLER_NAME} ${DATA_HANDLER_NAME} ${ML_MODULE_NAME})
-endif (UNIX AND NOT ANDROID)
+
+target_link_libraries (Brainflow PRIVATE BoardController DataHandler MLModule)
 
 # copy
 if (MSVC)
-    add_custom_command (TARGET ${GANGLION_LIB} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${GANGLION_LIB_NAME}"
-    )
-    add_custom_command (TARGET ${BRAINBIT_BLED_LIB} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-    )
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-        # copy board controller libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_controller.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_info_getter.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_info_getter.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${NEUROSDK_LIB_NAME}.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
-    )
-    add_custom_command (TARGET ${DATA_HANDLER_NAME} POST_BUILD
-        # copy data handler libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/data_handler/inc/data_handler.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/data_handler.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-    )
-    add_custom_command (TARGET ${ML_MODULE_NAME} POST_BUILD
-        # copy ml module libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/inc/ml_module.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/ml_module.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/brainflow_svm.model"
-    )
-    # copy Unicorn.dll
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/Unicorn.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/Unicorn.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/Unicorn.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/Unicorn.dll"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/Unicorn.dll"
-    )
+#    add_custom_command (TARGET BoardController POST_BUILD
+#        # copy board controller libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_controller.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_info_getter.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_info_getter.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${NEUROSDK_LIB_NAME}.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${NEUROSDK_LIB_NAME}.dll"
+#    )
+#    add_custom_command (TARGET DataHandler POST_BUILD
+#        # copy data handler libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/data_handler/inc/data_handler.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/data_handler.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#    )
+#    add_custom_command (TARGET MLModule POST_BUILD
+#        # copy ml module libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/$<CONFIG>/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/inc/ml_module.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/ml_module.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/brainflow_svm.model"
+#    )
+#    # copy Unicorn.dll
+#    add_custom_command (TARGET BoardController POST_BUILD
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/Unicorn.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/Unicorn.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/Unicorn.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/Unicorn.dll"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/Unicorn.dll"
+#    )
 endif (MSVC)
 if (UNIX AND NOT ANDROID)
-    add_custom_command (TARGET ${GANGLION_LIB} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/${GANGLION_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${GANGLION_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${GANGLION_LIB_NAME}"
-    )
-    add_custom_command (TARGET ${BRAINBIT_BLED_LIB} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/${BRAINBIT_BLED_LIB_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BRAINBIT_BLED_LIB_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${BRAINBIT_BLED_LIB_NAME}"
-    )
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-        # copy board controller libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/${BOARD_CONTROLLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_controller.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_info_getter.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_info_getter.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/brainflow_constants.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/brainflow_constants.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
-    )
-    add_custom_command (TARGET ${DATA_HANDLER_NAME} POST_BUILD
-        # copy data handler libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/data_handler/inc/data_handler.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/data_handler.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
-    )
-    add_custom_command (TARGET ${ML_MODULE_NAME} POST_BUILD
-        # copy ml libs
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/brainflow_svm.model"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/inc/ml_module.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/ml_module.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/brainflow_svm.model"
-    )
+#    add_custom_command (TARGET BoardController POST_BUILD
+#        # copy board controller libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${BOARD_CONTROLLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/${BOARD_CONTROLLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_controller.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_info_getter.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/board_info_getter.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/brainflow_constants.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/brainflow_constants.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${BOARD_CONTROLLER_COMPILED_NAME}"
+#    )
+#    add_custom_command (TARGET DataHandler POST_BUILD
+#        # copy data handler libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/data_handler/inc/data_handler.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/data_handler.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${DATA_HANDLER_COMPILED_NAME}"
+#    )
+#    add_custom_command (TARGET MLModule POST_BUILD
+#        # copy ml libs
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/brainflow_svm.model"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/inc/ml_module.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/ml_module.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export_matlab.h" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc/shared_export.h"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/${ML_MODULE_COMPILED_NAME}"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/src/ml/train/brainflow_svm.model" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/brainflow_svm.model"
+#    )
 endif (UNIX AND NOT ANDROID)
 if (UNIX AND NOT APPLE AND NOT ANDROID)
-    # copy libunicorn.so
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD 
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/libunicorn.so"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/libunicorn.so"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/libunicorn.so"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/libunicorn.so"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/linunicorn.so"
-    )
+#    # copy libunicorn.so
+#    add_custom_command (TARGET BoardController POST_BUILD 
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/libunicorn.so"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/libunicorn.so"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/libunicorn.so"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/libunicorn.so"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/linunicorn.so"
+#    )
 endif (UNIX AND NOT APPLE AND NOT ANDROID)
 if (APPLE)
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-        # copy neurosdk lib for MacOS
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/lib${NEUROSDK_LIB_NAME}.dylib"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
-    )
+#    add_custom_command (TARGET BoardController POST_BUILD
+#        # copy neurosdk lib for MacOS
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/julia-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources/lib${NEUROSDK_LIB_NAME}.dylib"
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib" "${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib/lib${NEUROSDK_LIB_NAME}.dylib"
+#    )
 endif (APPLE)
 
 if (ANDROID)
-    add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${BOARD_CONTROLLER_COMPILED_NAME}"
-    )
+#    add_custom_command (TARGET BoardController POST_BUILD
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${BOARD_CONTROLLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${BOARD_CONTROLLER_COMPILED_NAME}"
+#    )
     if (LibFTDI1_FOUND) # this 'if. could be removed if more dependency libraries exist
-        add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_HOME_DIRECTORY}/java-package/android/src/main/libs/${ANDROID_ABI}/"
-        )
+#        add_custom_command (TARGET BoardController POST_BUILD
+#            COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_HOME_DIRECTORY}/java-package/android/src/main/libs/${ANDROID_ABI}/"
+#        )
         foreach (DEPENDENCY_LIBRARY ${LIBFTDI_LIBRARIES})
             string (REGEX REPLACE "^-l" "" DEPENDENCY_LIBRARY ${DEPENDENCY_LIBRARY})
             if (DEPENDENCY_LIBRARY STREQUAL "log")
                 continue ()
             endif (DEPENDENCY_LIBRARY STREQUAL "log")
             find_library (DEPENDENCY_LIBRARY_LOCATION NAMES ${DEPENDENCY_LIBRARY} HINTS ${LIBFTDI_LIBRARY_DIRS} / NO_CMAKE_PATH NO_CMAKE_FIND_ROOT_PATH)
-            add_custom_command (TARGET ${BOARD_CONTROLLER_NAME} POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${DEPENDENCY_LIBRARY_LOCATION}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/"
-                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${DEPENDENCY_LIBRARY_LOCATION}" "${CMAKE_HOME_DIRECTORY}/java-package/android/src/main/libs/${ANDROID_ABI}/"
-            )
+#            add_custom_command (TARGET BoardController POST_BUILD
+#                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${DEPENDENCY_LIBRARY_LOCATION}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/"
+#                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${DEPENDENCY_LIBRARY_LOCATION}" "${CMAKE_HOME_DIRECTORY}/java-package/android/src/main/libs/${ANDROID_ABI}/"
+#            )
             unset (DEPENDENCY_LIBRARY_LOCATION CACHE)
         endforeach (DEPENDENCY_LIBRARY)
     endif (LibFTDI1_FOUND)
-    add_custom_command (TARGET ${DATA_HANDLER_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${DATA_HANDLER_COMPILED_NAME}"
-    )
-    add_custom_command (TARGET ${ML_MODULE_NAME} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${ML_MODULE_COMPILED_NAME}"
-    )
+#    add_custom_command (TARGET DataHandler POST_BUILD
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${DATA_HANDLER_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${DATA_HANDLER_COMPILED_NAME}"
+#    )
+#    add_custom_command (TARGET MLModule POST_BUILD
+#        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${CMAKE_HOME_DIRECTORY}/compiled/${ML_MODULE_COMPILED_NAME}" "${CMAKE_HOME_DIRECTORY}/tools/jniLibs/${ANDROID_ABI}/${ML_MODULE_COMPILED_NAME}"
+#    )
 endif (ANDROID)
+
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    MESSAGE ("64 bits compiler detected")
+    SET (PLATFORM_ACH "X64")
+#    set_property (TARGET BoardController PROPERTY OUTPUT_NAME BoardController64)
+#    set_property (TARGET DataHandler PROPERTY OUTPUT_NAME DataHandler64)
+#    set_property (TARGET MLModule PROPERTY OUTPUT_NAME MLModule64)
+    if(APPLE)
+        SET (NEUROSDK_LIB_NAME "neurosdk-shared")
+    elseif (UNIX)
+    else ()
+        SET (NEUROSDK_LIB_NAME "neurosdk-x64")
+    endif (APPLE)
+else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    MESSAGE ("32 bits compiler detected")
+    SET (PLATFORM_ACH "X86")
+    # for linux and apple we dont add 32bit library to packages, so there can not be a conflict between libs
+    # to dont write code like if(32 bits) if(64 bits) in bindings and keep the ability to use them if brainflow was built from src
+    # use the same name for 32 and 64 bits
+    set_property (TARGET BoardController PROPERTY OUTPUT_NAME BoardController32)
+    set_property (TARGET DataHandler PROPERTY OUTPUT_NAME DataHandler32)
+    set_property (TARGET MLModule PROPERTY OUTPUT_NAME MLModule32)
+    if (APPLE)
+    elseif (UNIX)
+    else ()
+        SET (NEUROSDK_LIB_NAME "neurosdk-x86")
+    endif (APPLE)
+endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 # install
 set (VERSION_CONFIG ${CMAKE_HOME_DIRECTORY}/compiled/brainflowConfigVersion.cmake)
@@ -599,7 +639,7 @@ set (CONFIG_INSTALL_DIR lib/cmake/brainflow)
 set (PROJECT_CONFIG ${CMAKE_HOME_DIRECTORY}/compiled/brainflowConfig.cmake)
 set (TARGETS_EXPORT_NAME brainflowTargets)
 set (PACKAGE_LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib)
-set (PACKAGE_INC_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/inc)
+set (PACKAGE_INC_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include)
 
 include (CMakePackageConfigHelpers)
 
@@ -615,23 +655,6 @@ configure_package_config_file (
     INSTALL_DESTINATION ${CONFIG_INSTALL_DIR}
 )
 
-install (
-    FILES
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_controller.h
-    ${CMAKE_HOME_DIRECTORY}/src/utils/inc/brainflow_constants.h
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/board_info_getter.h
-    ${CMAKE_HOME_DIRECTORY}/src/board_controller/inc/brainflow_input_params.h
-    ${CMAKE_HOME_DIRECTORY}/src/utils/inc/shared_export.h
-    ${CMAKE_HOME_DIRECTORY}/src/data_handler/inc/data_handler.h
-    ${CMAKE_HOME_DIRECTORY}/src/ml/inc/ml_module.h
-    ${CMAKE_HOME_DIRECTORY}/src/ml/inc/brainflow_model_params.h
-    ${CMAKE_HOME_DIRECTORY}/cpp-package/src/inc/data_filter.h
-    ${CMAKE_HOME_DIRECTORY}/cpp-package/src/inc/board_shim.h
-    ${CMAKE_HOME_DIRECTORY}/cpp-package/src/inc/ml_model.h
-    ${CMAKE_HOME_DIRECTORY}/src/utils/inc/brainflow_array.h
-    ${CMAKE_HOME_DIRECTORY}/src/utils/inc/brainflow_exception.h
-    DESTINATION inc
-)
 # install svm_model
 install (
     FILES
@@ -641,60 +664,61 @@ install (
 
 # install 3rd party deps
 if (MSVC)
-    install (
-        FILES
-        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll
-        DESTINATION lib
-    )
+#    install (
+#        FILES
+#        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/${NEUROSDK_LIB_NAME}.dll
+#        DESTINATION lib
+#    )
     if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND BUILD_OYMOTION_SDK)
-        install (
-            FILES
-            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/compiled/$<CONFIG>/gForceSDKWrapper.dll
-            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/lib/gforce64.dll
-            DESTINATION lib
-        )
+#        install (
+#            FILES
+#            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/compiled/$<CONFIG>/gForceSDKWrapper.dll
+#            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/lib/gforce64.dll
+#            DESTINATION lib
+#        )
     endif (CMAKE_SIZEOF_VOID_P EQUAL 8 AND BUILD_OYMOTION_SDK)
     if (CMAKE_SIZEOF_VOID_P EQUAL 4 AND BUILD_OYMOTION_SDK)
-        install (
-            FILES
-            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/compiled/$<CONFIG>/gForceSDKWrapper32.dll
-            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/lib/gforce32.dll
-            DESTINATION lib
-        )
+#        install (
+#            FILES
+#            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/compiled/$<CONFIG>/gForceSDKWrapper32.dll
+#            ${CMAKE_HOME_DIRECTORY}/third_party/gForceSDKCXX/lib/gforce32.dll
+#            DESTINATION lib
+#        )
     endif (CMAKE_SIZEOF_VOID_P EQUAL 4 AND BUILD_OYMOTION_SDK)
 endif (MSVC)
 
 if (APPLE)
-    install (
-        FILES
-        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib
-        DESTINATION lib
-    )
+#    install (
+#        FILES
+#        ${CMAKE_HOME_DIRECTORY}/third_party/neurosdk/lib/lib${NEUROSDK_LIB_NAME}.dylib
+#        DESTINATION lib
+#    )
 endif (APPLE)
 
 # install unicorn lib
 if (UNIX AND NOT APPLE)
-    install (
-        FILES
-        ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so
-        DESTINATION lib
-    )
+#    install (
+#        FILES
+#        ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/libunicorn.so
+#        DESTINATION lib
+#    )
 endif (UNIX AND NOT APPLE)
 
 if (MSVC)
-    install (
-        FILES
-        ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll
-        DESTINATION lib
-    )
+#    install (
+#        FILES
+#        ${CMAKE_HOME_DIRECTORY}/third_party/unicorn/lib/Unicorn.dll
+#        DESTINATION lib
+#    )
 endif (MSVC)
 
 install (
-    TARGETS ${BOARD_CONTROLLER_NAME} ${DATA_HANDLER_NAME} ${DSPFILTERS} ${WAVELIB} ${GANGLION_LIB} ${BRAINBIT_BLED_LIB} ${ML_MODULE_NAME} ${BRAINFLOW_CPP_BINDING_NAME}
+    TARGETS BoardController DataHandler ${DSPFILTERS} ${WAVELIB} MLModule Brainflow
     EXPORT ${TARGETS_EXPORT_NAME}
     RUNTIME DESTINATION lib
     LIBRARY DESTINATION lib
-    INCLUDES DESTINATION inc
+    INCLUDES DESTINATION include
+    PUBLIC_HEADER DESTINATION include
     ARCHIVE DESTINATION lib
 )
 
@@ -707,4 +731,57 @@ install (
     EXPORT ${TARGETS_EXPORT_NAME}
     NAMESPACE brainflow::
     DESTINATION ${CONFIG_INSTALL_DIR}
+)
+
+install (
+    TARGETS BoardController DataHandler MLModule
+    EXPORT python-package
+    RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib
+    LIBRARY DESTINATION ${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib
+    ARCHIVE DESTINATION ${CMAKE_HOME_DIRECTORY}/python-package/brainflow/lib
+    EXCLUDE_FROM_ALL
+)
+
+install (
+    TARGETS BoardController DataHandler MLModule
+    EXPORT java-package
+    RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources
+    LIBRARY DESTINATION ${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources
+    ARCHIVE DESTINATION ${CMAKE_HOME_DIRECTORY}/java-package/brainflow/src/main/resources
+    EXCLUDE_FROM_ALL
+)
+
+install (
+    TARGETS BoardController DataHandler MLModule
+    EXPORT csharp-package
+    RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib
+    LIBRARY DESTINATION ${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib
+    ARCHIVE DESTINATION ${CMAKE_HOME_DIRECTORY}/csharp-package/brainflow/brainflow/lib
+    EXCLUDE_FROM_ALL
+)
+
+install (
+    TARGETS BoardController DataHandler MLModule
+    EXPORT matlab-package
+    RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib
+    LIBRARY DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib
+    INCLUDES DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc
+    PUBLIC_HEADER DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc
+    ARCHIVE DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/lib
+    EXCLUDE_FROM_ALL
+)
+
+install (
+    FILES src/utils/inc/shared_export_matlab.h
+    RENAME shared_export.h
+    DESTINATION ${CMAKE_HOME_DIRECTORY}/matlab-package/brainflow/inc
+    EXCLUDE_FROM_ALL
+)
+
+install (
+    TARGETS BoardController DataHandler MLModule
+    EXPORT julia-package
+    RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/julia-package_/brainflow/lib
+    LIBRARY DESTINATION ${CMAKE_HOME_DIRECTORY}/julia-package_/brainflow/lib
+    ARCHIVE DESTINATION ${CMAKE_HOME_DIRECTORY}/julia-package_/brainflow/lib
 )
